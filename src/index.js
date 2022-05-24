@@ -8,6 +8,7 @@ import {
   InMemoryCache,
   ApolloProvider,
   useQuery,
+  useMutation,
   gql,
 } from "@apollo/client";
 
@@ -40,24 +41,81 @@ function GetUsers() {
   );
 }
 
+const ADD_USER = gql`
+  mutation CreateUser($username: ID!, $first_name: String!, $last_name: String!){
+    createUser(username: $username, first_name: $firstName, last_name: $lastName)
+    {
+      username
+      first_name
+      last_name
+    }
+  }
+`
+
+function AddUser() {
+  let usernameInput;
+  let firstNameInput;
+  let lastNameInput;
+
+  const [addUser, { data, loading, error }] = useMutation(ADD_USER);
+
+  if (loading) return 'Submitting...';
+  if (error) return `Submission error! ${error.message}`;
+
+  return (
+    <div>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          console.log(usernameInput.value);
+          addUser({ variables: { username: usernameInput.value, 
+            first_name: firstNameInput.value, last_name: lastNameInput.value } });
+          debugger;
+          usernameInput.value = '';
+          firstNameInput.value = '';
+          lastNameInput.value = '';
+        }}
+      >
+        <input
+          ref={node => {
+            usernameInput = node;
+          }}
+        />
+        <input
+          ref={node => {
+            firstNameInput = node;
+          }}
+        />
+        <input
+          ref={node => {
+            lastNameInput = node;
+          }}
+        />
+        <button type="submit">Add User</button>
+      </form>
+    </div>
+  );
+}
+
 const GET_MESSAGES = gql`
-  query {
-    messages {
-      body
-      user {
-        username
+  query getUserMessages($username: ID!){
+    user(username: $username){
+      messages {
+        body
       }
     }
   }
 `;
 
-function GetMessages() {
-  const { loading, error, data } = useQuery(GET_MESSAGES);
+function GetMessages({username}) {
+  const { loading, error, data } = useQuery(GET_MESSAGES, {
+    variables: { username },
+  });
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
   return (
     <div>
-      {data.messages.map((message) => (
+      {data.user.messages.map((message) => (
         <div>{message.body}</div>
       ))}
     </div>
@@ -78,4 +136,4 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-export { GetUsers, GetMessages };
+export { GetUsers, GetMessages, AddUser };
