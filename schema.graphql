@@ -1,0 +1,45 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+"The `Upload` scalar type represents a file upload."
+scalar Upload
+type Query {
+  _: Boolean
+  users: [User!]
+  user(username: ID!): User
+  messages: [Message!]!
+  message(id: ID!): Message!
+}
+type Mutation {
+  _: Boolean
+  createUser(username: ID!, first_name: String!, last_name: String!): User!
+  createMessage(username: ID!, body: String!): Message!
+  deleteMessage(id: ID!): Message!
+}
+type Subscription {
+  _: Boolean
+  messageAdded(username: ID!): Message
+}
+type User {
+  username: ID!
+  first_name: String!
+  last_name: String!
+  messages: [Message!]
+}
+type Message {
+  id: ID!
+  body: String!
+  user: User!
+}
+enum CacheControlScope {
+  PUBLIC
+  PRIVATE
+}
+directive @cacheControl(maxAge: Int, scope: CacheControlScope) on FIELD_DEFINITION | OBJECT | INTERFACE
+"Exposes a URL that specifies the behaviour of this scalar."
+directive @specifiedBy(
+    "The URL that specifies the behaviour of this scalar."
+    url: String!
+  ) on SCALAR
