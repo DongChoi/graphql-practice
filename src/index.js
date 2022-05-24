@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -29,7 +29,6 @@ const GET_USERS = gql`
 
 function GetUsers() {
   const { loading, error, data } = useQuery(GET_USERS);
-  console.log(data);
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :</p>;
   return (
@@ -43,7 +42,7 @@ function GetUsers() {
 
 const ADD_USER = gql`
   mutation CreateUser($username: ID!, $first_name: String!, $last_name: String!){
-    createUser(username: $username, first_name: $firstName, last_name: $lastName)
+    createUser(username: $username, first_name: $first_name, last_name: $last_name)
     {
       username
       first_name
@@ -53,43 +52,56 @@ const ADD_USER = gql`
 `
 
 function AddUser() {
-  let usernameInput;
-  let firstNameInput;
-  let lastNameInput;
+
+  const initialFormData = {
+    usernameInput : "",
+    firstNameInput : "",
+    lastNameInput : ""
+  }
+
+  const [formData, setFormData] = useState(initialFormData)
 
   const [addUser, { data, loading, error }] = useMutation(ADD_USER);
 
   if (loading) return 'Submitting...';
-  if (error) return `Submission error! ${error.message}`;
+  if (error) {
+    return `Submission error! ${error.message}`;
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    addUser({
+      variables: {
+        username: formData.usernameInput,
+        first_name: formData.firstNameInput, last_name: formData.lastNameInput
+      }
+    });
+    setFormData(initialFormData);
+  }
+
+  function handleChange(event) {
+    const {name, value} = event.target;
+
+    setFormData(fData => ({...fData, [name] : value}))
+  }
 
   return (
     <div>
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          console.log(usernameInput.value);
-          addUser({ variables: { username: usernameInput.value, 
-            first_name: firstNameInput.value, last_name: lastNameInput.value } });
-          debugger;
-          usernameInput.value = '';
-          firstNameInput.value = '';
-          lastNameInput.value = '';
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <input
-          ref={node => {
-            usernameInput = node;
-          }}
+          onChange={handleChange}
+          value={formData.usernameInput}
+          name="usernameInput"
         />
         <input
-          ref={node => {
-            firstNameInput = node;
-          }}
+          onChange={handleChange}
+          value={formData.firstNameInput}
+          name="firstNameInput"
         />
         <input
-          ref={node => {
-            lastNameInput = node;
-          }}
+          onChange={handleChange}
+          value={formData.lastNameInput}
+          name="lastNameInput"
         />
         <button type="submit">Add User</button>
       </form>
@@ -107,7 +119,7 @@ const GET_MESSAGES = gql`
   }
 `;
 
-function GetMessages({username}) {
+function GetMessages({ username }) {
   const { loading, error, data } = useQuery(GET_MESSAGES, {
     variables: { username },
   });
