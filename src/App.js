@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { AddUser, GetMessages, GetUsers } from "./index.js";
+import { AddUser, GetMessages, GetUsers, AddMessage } from "./index.js";
 
 function App() {
   return (
@@ -9,7 +9,9 @@ function App() {
       <hr />
       <AddUser />
       <hr />
-      <GetMessages username={"Andrew"} />
+      <AddMessage />
+      <hr />
+      <GetMessages username={"DongChoi"} />
     </div>
   );
 }

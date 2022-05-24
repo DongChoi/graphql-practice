@@ -88,22 +88,93 @@ function AddUser() {
   return (
     <div>
       <form onSubmit={handleSubmit}>
+        <h2>Add New User</h2>
         <input
           onChange={handleChange}
           value={formData.usernameInput}
           name="usernameInput"
+          placeholder="username"
         />
         <input
           onChange={handleChange}
           value={formData.firstNameInput}
           name="firstNameInput"
+          placeholder="first name"
         />
         <input
           onChange={handleChange}
           value={formData.lastNameInput}
           name="lastNameInput"
+          placeholder="last name"
         />
         <button type="submit">Add User</button>
+      </form>
+    </div>
+  );
+}
+const ADD_MESSAGE = gql`
+  mutation CreateMessage($username: ID!, $body: String!){
+    createMessage(username: $username, body: $body)
+    {
+      id
+      body
+      user {
+        username
+      }
+    }
+  }
+`
+
+function AddMessage() {
+
+  const initialFormData = {
+    usernameInput : "",
+    bodyInput : ""
+  }
+
+  const [formData, setFormData] = useState(initialFormData)
+
+  const [addUser, { data, loading, error }] = useMutation(ADD_MESSAGE);
+
+  if (loading) return 'Submitting...';
+  if (error) {
+    return `Submission error! ${error.message}`;
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    addUser({
+      variables: {
+        username: formData.usernameInput,
+        body: formData.bodyInput
+      }
+    });
+    setFormData(initialFormData);
+  }
+
+  function handleChange(event) {
+    const {name, value} = event.target;
+
+    setFormData(fData => ({...fData, [name] : value}))
+  }
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <h2>Add New Message</h2>
+        <input
+          onChange={handleChange}
+          value={formData.usernameInput}
+          name="usernameInput"
+          placeholder="username"
+        />
+        <input
+          onChange={handleChange}
+          value={formData.bodyInput}
+          name="bodyInput"
+          placeholder="message body"
+        />
+        <button type="submit">Add Message</button>
       </form>
     </div>
   );
@@ -148,4 +219,4 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-export { GetUsers, GetMessages, AddUser };
+export { GetUsers, GetMessages, AddUser, AddMessage };
